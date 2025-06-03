@@ -109,7 +109,7 @@ namespace SF.Controllers
                     sueldo.fondo_reserva = 0;
                     sueldo.mostrar_fondo_reserva = false;
                 }
-                sueldo.total_provisiones = sueldo.aporte_patronal + sueldo.fondo_reserva + sueldo.decimo_tercero + sueldo.decimo_cuarto + sueldo.vacaciones;
+                sueldo.total_provisiones =  sueldo.fondo_reserva + sueldo.decimo_tercero + sueldo.decimo_cuarto + sueldo.vacaciones;
 
                 sueldos.Add(sueldo);
             }
