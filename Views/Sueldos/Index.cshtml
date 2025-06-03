@@ -4,41 +4,108 @@
 <div class="container mt-5">
     <h2 class="mb-4">Listado de Sueldos</h2>
     <a asp-action="Crear" class="btn btn-success mb-3">Nuevo Sueldo</a>
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Empleado</th>
-                <th>Usuario</th>
-                <th>Sueldo</th>
-                <th>Bono</th>
-                <th>Total Ingresos</th>
-                <th>Deducción AP Pers.</th>
-                <th>Anticipo</th>
-                <th>Total Deducciones</th>
-                <th>Líquido a Recibir</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody>
+
+    <!-- SECCIÓN 1: Tabla de Sueldos -->
+    <div class="card mb-5">
+        <div class="card-header bg-primary text-white">
+            <strong>Sueldos Registrados</strong>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-bordered table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Empleado</th>
+                        <th>Usuario</th>
+                        <th>Meses Antigüedad</th>
+                        <th>Sueldo</th>
+                        <th>Bono</th>
+                        <th>Total Ingresos</th>
+                        <th>Deducción AP Pers.</th>
+                        <th>Anticipo</th>
+                        <th>Total Deducciones</th>
+                        <th>Líquido a Recibir</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.sueldo_id</td>
+                            <td>@item.empleado_nombre</td>
+                            <td>@item.empleado_usuario</td>
+                            <td>@item.meses_antiguedad</td>
+                            <td>@item.sueldo</td>
+                            <td>@item.bono</td>
+                            <td>@item.total_ingresos</td>
+                            <td>@item.deduccion_ap_pers</td>
+                            <td>@item.anticipo</td>
+                            <td>@item.total_deducciones</td>
+                            <td>@item.liquido_recibir</td>
+                            <td>@item.fecha.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: Tabla de Provisiones -->
+    <div class="card mb-5">
+        <div class="card-header bg-info text-white">
+            <strong>Provisiones e IESS</strong>
+        </div>
+        <div class="card-body p-0">
             @foreach (var item in Model)
             {
-                <tr>
-                    <td>@item.sueldo_id</td>
-                    <td>@item.empleado_nombre</td>
-                    <td>@item.empleado_usuario</td>
-                    <td>@item.sueldo</td>
-                    <td>@item.bono</td>
-                    <td>@item.total_ingresos</td>
-                    <td>@item.deduccion_ap_pers</td>
-                    <td>@item.anticipo</td>
-                    <td>@item.total_deducciones</td>
-                    <td>@item.liquido_recibir</td>
-                    <td>@item.fecha.ToString("yyyy-MM-dd")</td>
-                </tr>
+                <div class="mb-4">
+                    <div class="mb-2">
+                        <span class="fw-bold">@item.empleado_nombre</span>
+                        <span class="text-muted">(@item.empleado_usuario)</span>
+                        <span class="badge bg-secondary ms-2">Antigüedad: @item.meses_antiguedad meses</span>
+                        <span class="text-secondary ms-2">Fecha: @item.fecha.ToString("yyyy-MM-dd")</span>
+                    </div>
+                    <table class="table table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th colspan="2" class="text-center" style="background:#bed7ee;">IESS</th>
+                                <th colspan="5" class="text-center" style="background:#fde7de;">PROVISIONES</th>
+                            </tr>
+                            <tr>
+                                <th style="background:#bed7ee;">12,15%<br/>APORTE PATRONAL</th>
+                                <th style="background:#fde7de;">FONDO DE RESERVA</th>
+                                <th style="background:#fde7de;">XIII SUELDO</th>
+                                <th style="background:#fde7de;">XIV SUELDO</th>
+                                <th style="background:#fde7de;">VACACIONES</th>
+                                <th style="background:#fde7de;">TOTAL DE<br/>PROVISIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>@item.aporte_patronal.ToString("0.00")</td>
+                                <td>
+                                    @if (item.mostrar_fondo_reserva)
+                                    {
+                                        @item.fondo_reserva.ToString("0.00")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No aplica</span>
+                                    }
+                                </td>
+                                <td>@item.decimo_tercero.ToString("0.00")</td>
+                                <td>@item.decimo_cuarto.ToString("0.00")</td>
+                                <td>@item.vacaciones.ToString("0.00")</td>
+                                <td>@item.total_provisiones.ToString("0.00")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    </div>
+
     <div class="mt-3">
         <a asp-action="Index" asp-controller="Dashboard" class="btn btn-outline-primary">
             ← Volver al Dashboard

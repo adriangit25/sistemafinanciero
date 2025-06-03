@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SF.Models;
 using MySql.Data.MySqlClient;
 using System.Collections.Generic;
+using System;
 
 namespace SF.Controllers
 {
@@ -63,7 +64,7 @@ namespace SF.Controllers
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                sueldos.Add(new Sueldo
+                var sueldo = new Sueldo
                 {
                     sueldo_id = reader.GetInt32("sueldo_id"),
                     reg_id = reader.GetInt32("reg_id"),
@@ -77,7 +78,40 @@ namespace SF.Controllers
                     fecha = reader.GetDateTime("fecha"),
                     empleado_nombre = reader["reg_nombre"].ToString(),
                     empleado_usuario = reader["reg_usuario"].ToString()
-                });
+                };
+
+                // Consultar la fecha de ingreso desde tbl_registro para este reg_id
+                DateTime fechaIngreso = DateTime.MinValue;
+                using (var conn2 = new MySqlConnection(_connectionString))
+                {
+                    conn2.Open();
+                    using var cmd2 = new MySqlCommand("SELECT reg_fecha_ingreso FROM tbl_registro WHERE reg_id=@reg_id", conn2);
+                    cmd2.Parameters.AddWithValue("@reg_id", sueldo.reg_id);
+                    using var reader2 = cmd2.ExecuteReader();
+                    if (reader2.Read())
+                        fechaIngreso = reader2.GetDateTime("reg_fecha_ingreso");
+                }
+                int mesesAntiguedad = ((sueldo.fecha.Year - fechaIngreso.Year) * 12) + sueldo.fecha.Month - fechaIngreso.Month;
+                sueldo.meses_antiguedad = mesesAntiguedad;
+
+                // Cálculos de provisiones
+                sueldo.aporte_patronal = Math.Round(sueldo.total_ingresos * 0.1215M, 2);
+                sueldo.decimo_tercero = Math.Round(sueldo.total_ingresos / 12M, 2);
+                sueldo.decimo_cuarto = Math.Round(470M / 12M, 2);
+                sueldo.vacaciones = Math.Round(sueldo.total_ingresos / 12M, 2);
+                if (mesesAntiguedad >= 12)
+                {
+                    sueldo.fondo_reserva = Math.Round(sueldo.total_ingresos * 0.083333M, 2);
+                    sueldo.mostrar_fondo_reserva = true;
+                }
+                else
+                {
+                    sueldo.fondo_reserva = 0;
+                    sueldo.mostrar_fondo_reserva = false;
+                }
+                sueldo.total_provisiones = sueldo.aporte_patronal + sueldo.fondo_reserva + sueldo.decimo_tercero + sueldo.decimo_cuarto + sueldo.vacaciones;
+
+                sueldos.Add(sueldo);
             }
 
             return View(sueldos);
@@ -95,7 +129,7 @@ namespace SF.Controllers
 
         // POST: Crear sueldo
         [HttpPost]
-        public IActionResult Crear(Sueldo nuevoSueldo) // renombrado para evitar el warning MVC1004
+        public IActionResult Crear(Sueldo nuevoSueldo)
         {
             if (HttpContext.Session.GetString("rol") != "administrador")
                 return RedirectToAction("Index", "Dashboard");
